@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Shake To Win</title>
+	<link rel="stylesheet" href="styles.css" />
+	<script type="text/javascript">
+		const oneSecond = 1000;
+		var lastHandling = Date.now();
+		var lastMax = 0;
+
+		function handleAnimation() {
+			lastMax -= 0.01;
+			if (lastMax < 0) {
+				lastMax = 0;
+			}
+			document.getElementById('delta').parentElement.style.width = lastMax + "rem";
+		}
+
+		function handleMotion(e) {
+			if (Date.now() - lastHandling < 100) {
+				return;
+			}
+
+			var x = Math.ceil(e.accelerationIncludingGravity.x);
+			var y = Math.ceil(e.accelerationIncludingGravity.y);
+			var z = Math.ceil(e.accelerationIncludingGravity.z);
+
+			const earthGravity = 9.8;
+			var delta = Math.ceil(Math.abs(x) + Math.abs(y) + Math.abs(z) - earthGravity);
+
+			if (delta > lastMax) {
+				lastMax = delta;
+			}
+
+			console.log(x);
+			console.log(y);
+			console.log(z);
+			lastHandling = Date.now();
+		}
+
+		function grantMotionAccess() {
+			if (typeof DeviceMotionEvent.requestPermission === 'function') { // iOS 13
+				DeviceMotionEvent 
+					.requestPermission()
+					.then(response => {
+						if (response === 'granted') {
+							window.addEventListener('devicemotion', handleMotion);
+						}
+					})
+					.catch(alert);
+			} else { // Other OS
+				window.addEventListener('devicemotion', handleMotion);
+			}
+
+			setInterval(handleAnimation, 1);
+		}
+	</script>
+</head>
+<body>
+	<div id="screen">
+		<div id="playButton" class="menuButton" style="top:6rem" onclick="grantMotionAccess()">
+			<div>Grant Motion Access</div>
+		</div>
+		<div class="menuButton" style="top:9rem">
+			<div id="delta"></div>
+		</div>
+	</div>
+</body>
+</html>
