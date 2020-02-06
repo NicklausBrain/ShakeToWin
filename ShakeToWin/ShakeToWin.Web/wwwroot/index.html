@@ -10,11 +10,12 @@
 		var lastMax = 0;
 
 		function handleAnimation() {
-			lastMax -= 0.01;
+			lastMax -= 0.05;
 			if (lastMax < 0) {
 				lastMax = 0;
 			}
-			document.getElementById('delta').parentElement.style.width = lastMax + "rem";
+			document.getElementById('delta').parentElement.style.height = 2 + lastMax + "rem";
+			document.getElementById('delta').parentElement.style.top = 28 - lastMax + "rem";
 		}
 
 		function handleMotion(e) {
@@ -59,10 +60,10 @@
 </head>
 <body>
 	<div id="screen">
-		<div id="playButton" class="menuButton" style="top:6rem" onclick="grantMotionAccess()">
+		<div id="playButton" class="menuButton" style="top:2rem" onclick="grantMotionAccess()">
 			<div>Grant Motion Access</div>
 		</div>
-		<div class="menuButton" style="top:9rem">
+		<div class="menuButton" style="top: 28rem; width: 2rem;">
 			<div id="delta"></div>
 		</div>
 	</div>
