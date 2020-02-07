@@ -9,7 +9,7 @@ namespace ShakeToWin.Web.Models
 		public ShakeReport(
 			int roomId,
 			int userId,
-			int acceleration)
+			float acceleration)
 		{
 			RoomId = roomId;
 			UserId = userId;

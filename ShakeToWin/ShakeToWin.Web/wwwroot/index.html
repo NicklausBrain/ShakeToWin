@@ -4,35 +4,41 @@
 	<meta charset="utf-8" />
 	<title>Shake To Win</title>
 	<link rel="stylesheet" href="styles.css" />
+	<script src="scripts/api.js"></script>
 	<script type="text/javascript">
-		const oneSecond = 1000;
-		var lastHandling = Date.now();
-		var lastMax = 0;
+		const stateRefreshRate = 1000;
+		var lastPeakAcceleration = 0;
+		var lastAcceleration = 0;
 		var state = {};
 
+		function refreshSate(playroom) {
+			state.playroom = playroom;
+		}
+
 		function handleAnimation() {
-			lastMax -= 0.05;
-			if (lastMax < 0) {
-				lastMax = 0;
+			lastPeakAcceleration -= 0.05;
+			if (lastPeakAcceleration < 0) {
+				lastPeakAcceleration = 0;
 			}
-			document.getElementById('delta').parentElement.style.height = 2 + lastMax + "rem";
-			document.getElementById('delta').parentElement.style.top = 28 - lastMax + "rem";
+			document.getElementById('acceleration').parentElement.style.height = 2 + lastPeakAcceleration + "rem";
+			document.getElementById('acceleration').parentElement.style.top = 28 - lastPeakAcceleration + "rem";
 
 			if (state.playroom) {
 				var otherMax = state.playroom.reports.filter(r => r.userId !== state.userId).map(r => r.acceleration);
-				document.getElementById('delta1').parentElement.style.height = 2 + otherMax[0] + "rem";
-				document.getElementById('delta1').parentElement.style.top = 28 - otherMax[0] + "rem";
-				document.getElementById('delta2').parentElement.style.height = 2 + otherMax[1] + "rem";
-				document.getElementById('delta2').parentElement.style.top = 28 - otherMax[1] + "rem";
-				document.getElementById('delta3').parentElement.style.height = 2 + otherMax[2] + "rem";
-				document.getElementById('delta3').parentElement.style.top = 28 - otherMax[2] + "rem";
-				document.getElementById('delta4').parentElement.style.height = 2 + otherMax[3] + "rem";
-				document.getElementById('delta4').parentElement.style.top = 28 - otherMax[3] + "rem";
+				document.getElementById('acceleration1').parentElement.style.height = 2 + otherMax[0] + "rem";
+				document.getElementById('acceleration1').parentElement.style.top = 28 - otherMax[0] + "rem";
+				document.getElementById('acceleration2').parentElement.style.height = 2 + otherMax[1] + "rem";
+				document.getElementById('acceleration2').parentElement.style.top = 28 - otherMax[1] + "rem";
+				document.getElementById('acceleration3').parentElement.style.height = 2 + otherMax[2] + "rem";
+				document.getElementById('acceleration3').parentElement.style.top = 28 - otherMax[2] + "rem";
+				document.getElementById('acceleration4').parentElement.style.height = 2 + otherMax[3] + "rem";
+				document.getElementById('acceleration4').parentElement.style.top = 28 - otherMax[3] + "rem";
 			}
 		}
 
+		var lastMotionHandling = Date.now();
 		function handleMotion(e) {
-			if (Date.now() - lastHandling < 100) {
+			if (Date.now() - lastMotionHandling < stateRefreshRate) {
 				return;
 			}
 
@@ -41,35 +47,13 @@
 			var z = Math.ceil(e.accelerationIncludingGravity.z);
 
 			const earthGravity = 9.8;
-			var delta = Math.ceil(Math.abs(x) + Math.abs(y) + Math.abs(z) - earthGravity);
+			lastAcceleration  = Math.ceil(Math.abs(x) + Math.abs(y) + Math.abs(z) - earthGravity);
 
-			if (delta > lastMax) {
-				lastMax = delta;
+			if (lastAcceleration  > lastPeakAcceleration) {
+				lastPeakAcceleration = lastAcceleration ;
 			}
 
-			lastHandling = Date.now();
-
-			if (state.playroom) {
-				fetch("/game/report", // extract
-					{
-						"body": JSON.stringify({
-							roomId: state.playroom.id,
-							userId: state.userId,
-							acceleration: delta
-						}),
-						"headers": { "content-type": "application/json-patch+json" },
-						"method": "POST",
-						"mode": "cors"
-					});
-
-				fetch("game/room/" + state.playroom.id, // extract
-					{
-						"method": "GET",
-						"mode": "cors"
-					})
-					.then(response => response.json())
-					.then(playroom => state.playroom = playroom);
-			}
+			lastMotionHandling = Date.now();
 		}
 
 		function grantMotionAccess() {
@@ -87,20 +71,32 @@
 			}
 
 			document.getElementById('grantMotionAccess').remove();
-
-			setInterval(handleAnimation, 1);
 		}
 
-		window.onload = function () {
-			fetch("game/connect", // extract
-				{
-					"body": null,
-					"method": "POST",
-					"mode": "cors"
-				})
-				.then(response => response.json())
-				.then(connection => state = connection);
+		function startReporting() {
+			setInterval(() =>
+				sendReport({
+					roomId: state.playroom.id,
+					userId: state.userId,
+					acceleration: lastPeakAcceleration
+				}),
+				stateRefreshRate);
 		}
+
+		function startRefreshing() {
+			setInterval(() =>
+				getPlayroomState(state.playroom.id)
+					.then(refreshSate),
+				stateRefreshRate);
+		}
+
+		window.onload = () =>
+			connect()
+			.then(connection => state = connection)
+			.then(startReporting)
+			.then(startRefreshing);
+
+		setInterval(handleAnimation, 1);
 	</script>
 </head>
 <body>
@@ -109,19 +105,19 @@
 			<div>Grant Motion Access</div>
 		</div>
 		<div class="menuButton" style="top: 28rem; width: 2rem;">
-			<div id="delta"></div>
+			<div id="acceleration"></div>
 		</div>
 		<div class="menuButton" style="top: 28rem; width: 2rem; height: 0rem; left: 5rem; background-color: blueviolet">
-			<div id="delta1"></div>
+			<div id="acceleration1"></div>
 		</div>
 		<div class="menuButton" style="top: 28rem; width: 2rem; height: 0rem; left: 8rem; background-color: darkblue">
-			<div id="delta2"></div>
+			<div id="acceleration2"></div>
 		</div>
 		<div class="menuButton" style="top: 28rem; width: 2rem; height: 0rem; left: 11rem; background-color: indigo">
-			<div id="delta3"></div>
+			<div id="acceleration3"></div>
 		</div>
 		<div class="menuButton" style="top: 28rem; width: 2rem; height: 0rem; left: 14rem; background-color: sandybrown">
-			<div id="delta4"></div>
+			<div id="acceleration4"></div>
 		</div>
 	</div>
 </body>
