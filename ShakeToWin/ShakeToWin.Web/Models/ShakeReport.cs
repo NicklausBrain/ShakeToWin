@@ -9,11 +9,11 @@ namespace ShakeToWin.Web.Models
 		public ShakeReport(
 			int roomId,
 			int userId,
-			int accelerationId)
+			int acceleration)
 		{
 			RoomId = roomId;
 			UserId = userId;
-			AccelerationId = accelerationId;
+			Acceleration = acceleration;
 			Timestamp = DateTimeOffset.Now;
 		}
 
@@ -21,7 +21,7 @@ namespace ShakeToWin.Web.Models
 
 		public int UserId { get; }
 
-		public int AccelerationId { get; }
+		public float Acceleration { get; }
 
 		public DateTimeOffset Timestamp { get; }
 	}

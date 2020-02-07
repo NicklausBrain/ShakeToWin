@@ -8,6 +8,7 @@
 		const oneSecond = 1000;
 		var lastHandling = Date.now();
 		var lastMax = 0;
+		var state = {};
 
 		function handleAnimation() {
 			lastMax -= 0.05;
@@ -16,6 +17,18 @@
 			}
 			document.getElementById('delta').parentElement.style.height = 2 + lastMax + "rem";
 			document.getElementById('delta').parentElement.style.top = 28 - lastMax + "rem";
+
+			if (state.playroom) {
+				var otherMax = state.playroom.reports.filter(r => r.userId !== state.userId).map(r => r.acceleration);
+				document.getElementById('delta1').parentElement.style.height = 2 + otherMax[0] + "rem";
+				document.getElementById('delta1').parentElement.style.top = 28 - otherMax[0] + "rem";
+				document.getElementById('delta2').parentElement.style.height = 2 + otherMax[1] + "rem";
+				document.getElementById('delta2').parentElement.style.top = 28 - otherMax[1] + "rem";
+				document.getElementById('delta3').parentElement.style.height = 2 + otherMax[2] + "rem";
+				document.getElementById('delta3').parentElement.style.top = 28 - otherMax[2] + "rem";
+				document.getElementById('delta4').parentElement.style.height = 2 + otherMax[3] + "rem";
+				document.getElementById('delta4').parentElement.style.top = 28 - otherMax[3] + "rem";
+			}
 		}
 
 		function handleMotion(e) {
@@ -34,15 +47,34 @@
 				lastMax = delta;
 			}
 
-			console.log(x);
-			console.log(y);
-			console.log(z);
 			lastHandling = Date.now();
+
+			if (state.playroom) {
+				fetch("/game/report", // extract
+					{
+						"body": JSON.stringify({
+							roomId: state.playroom.id,
+							userId: state.userId,
+							acceleration: delta
+						}),
+						"headers": { "content-type": "application/json-patch+json" },
+						"method": "POST",
+						"mode": "cors"
+					});
+
+				fetch("game/room/" + state.playroom.id, // extract
+					{
+						"method": "GET",
+						"mode": "cors"
+					})
+					.then(response => response.json())
+					.then(playroom => state.playroom = playroom);
+			}
 		}
 
 		function grantMotionAccess() {
 			if (typeof DeviceMotionEvent.requestPermission === 'function') { // iOS 13
-				DeviceMotionEvent 
+				DeviceMotionEvent
 					.requestPermission()
 					.then(response => {
 						if (response === 'granted') {
@@ -54,17 +86,42 @@
 				window.addEventListener('devicemotion', handleMotion);
 			}
 
+			document.getElementById('grantMotionAccess').remove();
+
 			setInterval(handleAnimation, 1);
+		}
+
+		window.onload = function () {
+			fetch("game/connect", // extract
+				{
+					"body": null,
+					"method": "POST",
+					"mode": "cors"
+				})
+				.then(response => response.json())
+				.then(connection => state = connection);
 		}
 	</script>
 </head>
 <body>
 	<div id="screen">
-		<div id="playButton" class="menuButton" style="top:2rem" onclick="grantMotionAccess()">
+		<div id="grantMotionAccess" class="menuButton" style="top:2rem" onclick="grantMotionAccess()">
 			<div>Grant Motion Access</div>
 		</div>
 		<div class="menuButton" style="top: 28rem; width: 2rem;">
 			<div id="delta"></div>
+		</div>
+		<div class="menuButton" style="top: 28rem; width: 2rem; height: 0rem; left: 5rem; background-color: blueviolet">
+			<div id="delta1"></div>
+		</div>
+		<div class="menuButton" style="top: 28rem; width: 2rem; height: 0rem; left: 8rem; background-color: darkblue">
+			<div id="delta2"></div>
+		</div>
+		<div class="menuButton" style="top: 28rem; width: 2rem; height: 0rem; left: 11rem; background-color: indigo">
+			<div id="delta3"></div>
+		</div>
+		<div class="menuButton" style="top: 28rem; width: 2rem; height: 0rem; left: 14rem; background-color: sandybrown">
+			<div id="delta4"></div>
 		</div>
 	</div>
 </body>
