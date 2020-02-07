@@ -44,7 +44,7 @@ body {
 	TODO: this is a try to emulate CSS class inheritance.
 	TODO: perhaps it is better to implicitly use several classes.
 */
-.control, .menuButton, .scoreItem, #gameSpeedLabel {
+.control, .gameButton, .scoreItem, #gameSpeedLabel {
 	position: absolute;
 	height: 2rem;
 	text-align: center;
@@ -58,7 +58,7 @@ body {
 		transform: translateY(-50%);
 	}
 
-.menuButton {
+.gameButton {
 	left: 2rem;
 	width: 14rem;
 	height: 2rem;
@@ -67,17 +67,17 @@ body {
 	border-radius: 1rem;
 }
 
-	.menuButton:hover {
+	.gameButton:hover {
 		background-color: darkcyan;
 		opacity: 0.75;
 	}
 
-	.menuButton div {
+	.gameButton div {
 		position: relative;
 		top: 50%;
 		transform: translateY(-50%);
 	}
 
-	.menuButton .fa {
+	.gameButton .fa {
 		display: inherit;
 	}

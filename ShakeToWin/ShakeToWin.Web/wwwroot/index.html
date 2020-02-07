@@ -8,31 +8,43 @@
 	<script type="text/javascript">
 		const stateRefreshRate = 1000;
 		var lastPeakAcceleration = 0;
-		var lastAcceleration = 0;
+		var compPeakAcceleration = [0, 0, 0, 0];
 		var state = {};
 
 		function refreshSate(playroom) {
 			state.playroom = playroom;
+
+			var compAcceleration = state.playroom.reports
+				.filter(r => r.userId !== state.userId)
+				.map(r => r.acceleration);
+
+			for (var i = 0; i < compAcceleration.length; i++) {
+				if (compAcceleration[i] > compPeakAcceleration[i]) {
+					compPeakAcceleration[i] = compAcceleration[i];
+				}
+			}
 		}
 
 		function handleAnimation() {
-			lastPeakAcceleration -= 0.05;
+			const decrease = 0.05;
+			lastPeakAcceleration -= decrease;
 			if (lastPeakAcceleration < 0) {
 				lastPeakAcceleration = 0;
 			}
-			document.getElementById('acceleration').parentElement.style.height = 2 + lastPeakAcceleration + "rem";
-			document.getElementById('acceleration').parentElement.style.top = 28 - lastPeakAcceleration + "rem";
+			var playerAccelerationControl = document.getElementById('playerAcceleration');
+			playerAccelerationControl.parentElement.style.height = 2 + lastPeakAcceleration + "rem";
+			playerAccelerationControl.parentElement.style.top = 28 - lastPeakAcceleration + "rem";
 
 			if (state.playroom) {
-				var otherMax = state.playroom.reports.filter(r => r.userId !== state.userId).map(r => r.acceleration);
-				document.getElementById('acceleration1').parentElement.style.height = 2 + otherMax[0] + "rem";
-				document.getElementById('acceleration1').parentElement.style.top = 28 - otherMax[0] + "rem";
-				document.getElementById('acceleration2').parentElement.style.height = 2 + otherMax[1] + "rem";
-				document.getElementById('acceleration2').parentElement.style.top = 28 - otherMax[1] + "rem";
-				document.getElementById('acceleration3').parentElement.style.height = 2 + otherMax[2] + "rem";
-				document.getElementById('acceleration3').parentElement.style.top = 28 - otherMax[2] + "rem";
-				document.getElementById('acceleration4').parentElement.style.height = 2 + otherMax[3] + "rem";
-				document.getElementById('acceleration4').parentElement.style.top = 28 - otherMax[3] + "rem";
+				for (var i = 0; i < compPeakAcceleration.length; i++) {
+					compPeakAcceleration[i] -= decrease;
+					if (compPeakAcceleration[i] < 0) {
+						compPeakAcceleration[i] = 0;
+					}
+					var compAccelerationControl = document.getElementById('competitor' + i);
+					compAccelerationControl.parentElement.style.height = 2 + compPeakAcceleration[i] + "rem";
+					compAccelerationControl.parentElement.style.top = 28 - compPeakAcceleration[i] + "rem";
+				}
 			}
 		}
 
@@ -47,10 +59,10 @@
 			var z = Math.ceil(e.accelerationIncludingGravity.z);
 
 			const earthGravity = 9.8;
-			lastAcceleration  = Math.ceil(Math.abs(x) + Math.abs(y) + Math.abs(z) - earthGravity);
+			var lastAcceleration = Math.ceil(Math.abs(x) + Math.abs(y) + Math.abs(z) - earthGravity);
 
-			if (lastAcceleration  > lastPeakAcceleration) {
-				lastPeakAcceleration = lastAcceleration ;
+			if (lastAcceleration > lastPeakAcceleration) {
+				lastPeakAcceleration = lastAcceleration;
 			}
 
 			lastMotionHandling = Date.now();
@@ -92,32 +104,32 @@
 
 		window.onload = () =>
 			connect()
-			.then(connection => state = connection)
-			.then(startReporting)
-			.then(startRefreshing);
+				.then(connection => state = connection)
+				.then(startReporting)
+				.then(startRefreshing);
 
 		setInterval(handleAnimation, 1);
 	</script>
 </head>
 <body>
 	<div id="screen">
-		<div id="grantMotionAccess" class="menuButton" style="top:2rem" onclick="grantMotionAccess()">
+		<div id="grantMotionAccess" class="gameButton" style="top:2rem" onclick="grantMotionAccess()">
 			<div>Grant Motion Access</div>
 		</div>
-		<div class="menuButton" style="top: 28rem; width: 2rem;">
-			<div id="acceleration"></div>
+		<div class="gameButton" style="top: 28rem; width: 2rem;">
+			<div id="playerAcceleration"></div>
 		</div>
-		<div class="menuButton" style="top: 28rem; width: 2rem; height: 0rem; left: 5rem; background-color: blueviolet">
-			<div id="acceleration1"></div>
+		<div class="gameButton" style="top: 28rem; width: 2rem; height: 0rem; left: 5rem; background-color: blueviolet">
+			<div id="competitor0"></div>
 		</div>
-		<div class="menuButton" style="top: 28rem; width: 2rem; height: 0rem; left: 8rem; background-color: darkblue">
-			<div id="acceleration2"></div>
+		<div class="gameButton" style="top: 28rem; width: 2rem; height: 0rem; left: 8rem; background-color: darkblue">
+			<div id="competitor1"></div>
 		</div>
-		<div class="menuButton" style="top: 28rem; width: 2rem; height: 0rem; left: 11rem; background-color: indigo">
-			<div id="acceleration3"></div>
+		<div class="gameButton" style="top: 28rem; width: 2rem; height: 0rem; left: 11rem; background-color: indigo">
+			<div id="competitor2"></div>
 		</div>
-		<div class="menuButton" style="top: 28rem; width: 2rem; height: 0rem; left: 14rem; background-color: sandybrown">
-			<div id="acceleration4"></div>
+		<div class="gameButton" style="top: 28rem; width: 2rem; height: 0rem; left: 14rem; background-color: sandybrown">
+			<div id="competitor3"></div>
 		</div>
 	</div>
 </body>
