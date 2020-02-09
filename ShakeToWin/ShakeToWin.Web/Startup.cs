@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
@@ -24,6 +25,12 @@ namespace ShakeToWin.Web
 			{
 				c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sake To Win API", Version = "v1" });
 			});
+
+			// In production, the React files will be served from this directory
+			services.AddSpaStaticFiles(configuration =>
+			{
+				configuration.RootPath = "react-app/build";
+			});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -36,6 +43,8 @@ namespace ShakeToWin.Web
 			app.UseDefaultFiles();
 
 			app.UseStaticFiles();
+
+			app.UseSpaStaticFiles();
 
 			app.UseSwagger();
 
@@ -50,6 +59,16 @@ namespace ShakeToWin.Web
 			}
 
 			app.UseMvc();
+
+			app.UseSpa(spa =>
+			{
+				spa.Options.SourcePath = "react-app";
+
+				if (env.IsDevelopment())
+				{
+					spa.UseReactDevelopmentServer(npmScript: "start");
+				}
+			});
 		}
 	}
 }
