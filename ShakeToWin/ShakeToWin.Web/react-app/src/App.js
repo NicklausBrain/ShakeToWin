@@ -1,11 +1,49 @@
+/* Plugin that inables hot reloading, should be imported first */
 import { hot } from 'react-hot-loader/root';
 
-import React from 'react';
-// import logo from './logo.svg';
-// import './App.css';
+/* Components from the standard react library */
+import React, { Component } from 'react';
 
-function App() {
-  return (
+class App extends Component {
+
+  /*
+  The constructor for a React component is called before it is mounted.
+  When implementing the constructor for a React.Component subclass, you should call super(props) before any other statement.
+  Otherwise, this.props will be undefined in the constructor, which can lead to bugs. */
+  constructor() {
+    super();
+
+    const updateState = (diff) =>
+      /*
+        setState() enqueues changes to the component state and tells React that this component and its children need to be re-rendered with the updated state.
+        This is the primary method you use to update the user interface in response to event handlers and server responses. */
+      this.setState((state) => {
+        return Object.assign(state, diff);
+      });
+
+      this.state = {
+        init: async () => updateState({
+          // meals: (await axios.get(Url)).data
+        })
+      };
+  }
+
+  /*
+    componentDidMount() is invoked immediately after a component is mounted (inserted into the tree).
+    Initialization that requires DOM nodes should go here.
+    If you need to load data from a remote endpoint, this is a good place to instantiate the network request. */
+  componentDidMount = async () => await this.state.init(); // called before
+
+  /*
+  The render() method is the only required method in a class component.
+  When called, it should examine this.props and this.state and return one of the following types:
+  - React elements;
+  - Arrays and fragments;
+  - Portals;
+  - String and numbers;
+  - Booleans or null. */
+  render() {
+    return (
       <div id="screen" className="App">
         <div id="grantMotionAccess" class="gameButton" style={{ top: '2rem' }} onclick="grantMotionAccess()">
           <div>Grant Motion Access</div>
@@ -26,7 +64,8 @@ function App() {
           <div id="player4"></div>
         </div> */}
       </div>
-  );
+    );
+  }
 }
 
 export default hot(App);
