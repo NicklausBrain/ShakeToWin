@@ -4,6 +4,8 @@ import { hot } from 'react-hot-loader/root';
 /* Components from the standard react library */
 import React, { Component } from 'react';
 
+import * as gyroscope from './core/gyroscope'
+
 class App extends Component {
 
   /*
@@ -21,11 +23,16 @@ class App extends Component {
         return Object.assign(state, diff);
       });
 
-      this.state = {
-        init: async () => updateState({
-          // meals: (await axios.get(Url)).data
-        })
-      };
+    this.state = {
+      init: async () => updateState({
+        // meals: (await axios.get(Url)).data
+      }),
+      motionAccessGranted: false
+    };
+
+    this.grantMotionAccess = () =>
+      gyroscope.grantMotionAccess()
+        .then(() => updateState({ motionAccessGranted: true }));
   }
 
   /*
@@ -45,13 +52,15 @@ class App extends Component {
   render() {
     return (
       <div id="screen" className="App">
-        <div id="grantMotionAccess" class="gameButton" style={{ top: '2rem' }} onclick="grantMotionAccess()">
-          <div>Grant Motion Access</div>
-        </div>
-        <div class="gameButton" style={{ top: '28rem', width: '2rem' }}>
+        {!this.state.motionAccessGranted ?
+          (<div id="grantMotionAccess" className={"gameButton"} style={{ top: '2rem' }} onClick={this.grantMotionAccess}>
+            <div>Grant Motion Access</div>
+          </div>) : null
+        }
+        <div className={"gameButton"} style={{ top: '28rem', width: '2rem' }}>
           <div id="player0"></div>
         </div>
-        <div class="gameButton" style={{ top: '28rem', width: '2rem', height: '0', left: '5rem', background_color: 'blueviolet' }}>
+        <div className={"gameButton"} style={{ top: '28rem', width: '2rem', height: '0', left: '5rem', background_color: 'blueviolet' }}>
           <div id="player1"></div>
         </div>
         {/* <div class="gameButton" style="top: 28rem; width: 2rem; height: 0; left: 8rem; background-color: darkblue">
