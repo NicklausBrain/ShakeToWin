@@ -6,6 +6,8 @@ import React, { Component } from 'react';
 
 import * as gyroscope from './core/gyroscope'
 
+import MotionAccess from './components/MotionAccess'
+
 class App extends Component {
 
   /*
@@ -52,11 +54,12 @@ class App extends Component {
   render() {
     return (
       <div id="screen" className="App">
-        {!this.state.motionAccessGranted ?
+        <MotionAccess motionAccessGranted={this.state.motionAccessGranted} grantMotionAccess={this.grantMotionAccess} />
+        {/* {!this.state.motionAccessGranted ?
           (<div id="grantMotionAccess" className={"gameButton"} style={{ top: '2rem' }} onClick={this.grantMotionAccess}>
             <div>Grant Motion Access</div>
           </div>) : null
-        }
+        } */}
         <div className={"gameButton"} style={{ top: '28rem', width: '2rem' }}>
           <div id="player0"></div>
         </div>
